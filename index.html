@@ -135,6 +135,28 @@
       .team-grid,.process-grid { grid-template-columns:1fr; }
       .person { padding:18px;gap:16px;align-items:flex-start;flex-direction:column; } .portrait { width:180px;height:240px;flex:0 0 240px; }
       .contact-panel { padding:25px 19px; } .footer-inner { align-items:flex-start;flex-direction:column; }
+      /* On phones, make the project row a real swipeable carousel instead of
+         an animated ticker that fights the user's finger. Desktop animation stays unchanged. */
+      .marquee-window {
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;
+        touch-action:pan-x pan-y;
+        overscroll-behavior-x:contain;
+        scrollbar-width:none;
+        mask-image:none;
+        -webkit-mask-image:none;
+        cursor:grab;
+      }
+      .marquee-window::-webkit-scrollbar { display:none; }
+      .marquee-window:active { cursor:grabbing; }
+      .marquee-track {
+        animation:none !important;
+        transform:none !important;
+        width:max-content;
+        will-change:auto;
+      }
+      .marquee-window:hover .marquee-track { animation-play-state:paused; }
       .project-logo { width:260px;flex-basis:260px;height:120px;padding:16px;gap:14px; }
       .project-symbol { width:64px;height:64px;flex-basis:64px; }
       .project-name { font-size:14px; }
@@ -197,7 +219,7 @@
 
     <section class="projects" id="projects">
       <div class="wrap">
-        <div class="projects-top"><div><div class="kicker">Selected ecosystem</div><h2>Projects we’ve worked with</h2></div><p>Move across the row. Select a project to visit its official site.</p></div>
+        <div class="projects-top"><div><div class="kicker">Selected ecosystem</div><h2>Projects we’ve worked with</h2></div><p>Swipe or drag across the row. Select a project to visit its official site.</p></div>
       </div>
       <div class="marquee-window" aria-label="Scrolling project portfolio">
         <div class="marquee-track" id="marqueeTrack"></div>
@@ -283,8 +305,13 @@
     // reduced-motion settings for this one requested, informational ticker only.
     const marqueeWindow = document.querySelector(".marquee-window");
     function setMarqueeSpeed() {
+      // Phone layout uses native horizontal scrolling so visitors can swipe freely.
+      if (window.matchMedia("(max-width: 640px)").matches) {
+        track.style.animationDuration = "0s";
+        return;
+      }
       const halfWidth = track.scrollWidth / 2;
-      const speed = window.matchMedia("(max-width: 640px)").matches ? 14 : 18;
+      const speed = 18;
       const duration = Math.max(80, halfWidth / speed);
       track.style.setProperty("--marquee-duration", duration + "s");
       track.style.animationDuration = duration + "s";
